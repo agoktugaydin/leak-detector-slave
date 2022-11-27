@@ -10,17 +10,17 @@
 #include <Wire.h>
 
 // alici cihazin mac adressi
-uint8_t broadcastAddress[] = {0x58, 0xBF, 0x25, 0x17, 0x34, 0xC4};
+uint8_t broadcastAddress[] = {0xC8, 0xC9, 0xA3, 0xFC, 0xDC, 0x5C};
 
 // reset pini kullanilmiyor fakat i2c kutuphanesi icin gerekli
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
 
 // gonderilecek veri icin gerekli struct yapisi
-// alici cihazdaki struct yapisi ile eslesm
+// alici cihazdaki struct yapisi ile eslesmeli
 typedef struct struct_message {
     int id; // verici cihaza ait unique id
-    int x;
+    double x; // adc value
     int y;
 } struct_message;
 
@@ -39,7 +39,7 @@ double voltage = 0;
 double rawSum = 0;
 int limit = 1000;
 
-double displayValues(){
+void displayValues(){
 
   rawSum = analogRead(analogIn);
   analogReadResolution(12);
@@ -78,7 +78,6 @@ double displayValues(){
     display.print(rawValue);
     display.print("\n");
   }
-return rawValue;
 }
 
 void setup() {
@@ -107,16 +106,29 @@ void setup() {
   return;
   }
 
-  delay(500);               // sensorun stabil hale gelmesi icin delay
+  delay(300);               // sensorun stabil hale gelmesi icin delay
 }
 
 void loop() {
+  
+
   // Set values to send
-  myData.id = 0;
-  myData.x = displayValues();
+  myData.id = 1;
+  myData.x = rawValue;
   myData.y = random(0,50);
+  // mesaji gonder
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+   
+  if (result == ESP_OK) {
+    Serial.println("Sent with success");
+  }
+  else {
+    Serial.println("Error sending the data");
+  }
 
-
+  displayValues();
   display.display();
+
+
   delay(300);
 }
