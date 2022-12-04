@@ -20,7 +20,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 // alici cihazdaki struct yapisi ile eslesmeli
 typedef struct struct_message {
     int id; // verici cihaza ait unique id
-    double x; // adc value
+    int x; // adc value
     int y;
 } struct_message;
 
@@ -34,10 +34,10 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
 // pin and constant value assignees
 const int analogIn = A0;
-double rawValue = 0;
+int rawValue = 0;
 double voltage = 0;
 double rawSum = 0;
-int limit = 1000;
+int limit = 2000;
 
 void displayValues(){
 
@@ -65,6 +65,7 @@ void displayValues(){
   display.setCursor(0,0);         //set cursor coordinates
 
   if (rawValue<limit){            // limitleme -DEGERLE ILGILENILECEK-----------------------------------------
+    digitalWrite(LED_BUILTIN, LOW);
     display.print("NORMAL");
     display.setCursor(0,10); 
     display.print("raw value:"); 
@@ -72,6 +73,7 @@ void displayValues(){
     display.print("\n");
   }
   else {
+    digitalWrite(LED_BUILTIN, HIGH);
     display.print("LEAK");
     display.setCursor(0,10); 
     display.print("raw value:"); 
@@ -81,6 +83,7 @@ void displayValues(){
 }
 
 void setup() {
+  pinMode (LED_BUILTIN, OUTPUT);
   Serial.begin(115200);  
   Wire.begin();
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);   // oled i2c adress 0x3C
