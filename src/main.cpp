@@ -66,6 +66,7 @@ void displayValues(){
 
   if (rawValue<limit){            // limitleme -DEGERLE ILGILENILECEK-----------------------------------------
     digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(18, LOW);
     display.print("NORMAL");
     display.setCursor(0,10); 
     display.print("raw value:"); 
@@ -74,6 +75,7 @@ void displayValues(){
   }
   else {
     digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(18, HIGH);
     display.print("LEAK");
     display.setCursor(0,10); 
     display.print("raw value:"); 
@@ -83,7 +85,8 @@ void displayValues(){
 }
 
 void setup() {
-  pinMode (LED_BUILTIN, OUTPUT);
+  pinMode (LED_BUILTIN, OUTPUT);  
+  pinMode (18, OUTPUT);
   Serial.begin(115200);  
   Wire.begin();
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);   // oled i2c adress 0x3C
