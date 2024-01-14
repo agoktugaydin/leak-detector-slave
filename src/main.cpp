@@ -14,9 +14,9 @@
 
 	typedef struct struct_message {
 	    int id;
-	    int x;
-	    int y;
-	    int z;
+		// String uuid;
+		int gasIntensity;
+		int zone;
 	} struct_message;
 
 	struct_message myData;
@@ -43,12 +43,14 @@
 		channelFound = true;
 	}
 	}
+	
 	const int analogIn = A0;
 	int rawValue = 0;
 	double voltage = 0;
 	double rawSum = 0;
 	int limit = 2000;
 	int dataToSend = 0;
+	int percentage = 0;
 
 	void displayValues(){
 
@@ -63,6 +65,8 @@
 	  rawValue = rawSum/500;
 	  rawValue = rawValue; 
 	  voltage = (rawValue / 4096.0) * 3300;
+	  percentage = map(rawValue, 1800, 4096, 0, 100);
+
 	  Serial.print("adc value = " );    
 	  Serial.print(rawValue);
 	  Serial.print("\n");
@@ -79,20 +83,28 @@
 	  if (rawValue<limit){          
 	    digitalWrite(LED_BUILTIN, LOW);
 	    digitalWrite(18, LOW);
-	    display.print("NORMAL");
-	    display.setCursor(0,10); 
-	    display.print("raw value:"); 
-	    display.print(rawValue);
-	    display.print("\n");
+		display.setCursor(0,10);
+	    display.print("STATUS   ");
+	    display.print("NO LEAK");
+	    // display.print("raw value:"); 
+	    // display.print(rawValue);
+		display.print("\n");
+		display.print("Gas Intensity: ");
+		display.print(percentage);
+		display.print("%");
 	  }
 	  else {
-	    digitalWrite(LED_BUILTIN, HIGH);
+	    digitalWrite(LED_BUILTIN, LOW);
 	    digitalWrite(18, HIGH);
+		display.setCursor(0,10);
+	    display.print("STATUS:   ");
 	    display.print("LEAK");
-	    display.setCursor(0,10); 
-	    display.print("raw value:"); 
-	    display.print(rawValue);
-	    display.print("\n");
+	    // display.print("raw value:"); 
+	    // display.print(rawValue);
+		display.print("\n");
+		display.print("Gas Intensity: ");
+		display.print(percentage);
+		display.print("%");
 	  }
 	}
 
@@ -114,7 +126,7 @@
 	//https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_now.html#send-esp-now-data
 	esp_now_register_send_cb(onDataSent);
 	  
-    esp_now_peer_info_t peerInfo;
+	esp_now_peer_info_t peerInfo;
 	memset(&peerInfo, 0, sizeof(peerInfo));
 	memcpy(peerInfo.peer_addr, broadcastAddress, 6);
 	peerInfo.channel = 0;  
@@ -128,16 +140,16 @@
 		Serial.println("Pair failed");
 	}
 
-	  delay(300);              
+	  delay(300);
 	}
 
 	void loop() {
-
+	//   String uuid = "51b8b9eb-6dae-4f75-99f0-84740a2fe42a";
+	  int zone = 4135;
 	  myData.id = 1;
-	  dataToSend = rawValue;
-	  myData.x = dataToSend;
-	  myData.y = random(0,50);
-	  myData.z = random(0,50);
+	//   myData.uuid = uuid;
+	  myData.gasIntensity = percentage;
+	  myData.zone = zone;
 	  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
 	   
 	  if (result == ESP_OK) {
